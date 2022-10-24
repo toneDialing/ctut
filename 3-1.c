@@ -37,24 +37,25 @@ int main(void)
     return 0;
 }
 
+/* Rewritten from e3-3 so that now only one test is made *inside* the while loop.
+I was unable to reliably measure the difference in run-time between the two approaches,
+as using clock() seems to be the wrong approach. Will try to measure run-time again
+later once I learn the right approach. */
 int binsearch(int x, int *v, int n)
 {
     int low, high, mid;
 
     low = 0;
     high = n-1;
-    while(low<=high)
+    while(low<high)
     {
         mid = (low+high)/2;
-        if(x<v[mid])
+        if(x<=v[mid])
         {
-            high = mid - 1;
+            high = mid;
         }
-        else if(x>v[mid])
-        {
-            low = mid +1;
-        }
-        else return mid;
+        else low = mid+1;
     }
-    return -1;
+    if(x==v[low]) return low;
+    else return -1;
 }
