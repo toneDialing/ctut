@@ -70,7 +70,7 @@ void expand(char *s, char *t)
                     i++; //avoids doubling final char of abbreviated notation
                 }
             }
-            else if(isnumber(s[i-1]) && isnumber(s[i+1]))
+            else if(isnumber(s[i-1]) && isnumber(s[i+1])) // I think this should be isdigit() instead
             {
                 if(s[i+1] - s[i-1] <= 0)
                 {
