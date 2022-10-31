@@ -5,12 +5,18 @@
 #define MAXOP 100 // max size of operand or operator
 #define NUMBER '0' // signal that a number was found
 
+/* My problem with this calculator is that I can't enter any input without triggering '\n'.
+Perhaps there's a way to submit input without doing this, but I don't know what it is.
+Because '\n' is triggered in the switch every time input is entered, it causes the calculator
+to be a little buggy, but I'll ignore that feature for now because that's how K&R built it. */ 
+
 int getop(char *s);
 void push(double);
 double pop(void);
 void printstack(void);
 void duplicate(void);
 void swapstack(void);
+void clearstack(void);
 
 /* Reverse Polish calculator:
 Input must be entered with spaces separating digits. Operator appears after necessary operands.
@@ -79,6 +85,9 @@ int main(void)
             case 's':
                 swapstack();
                 break;
+            case 'c':
+                clearstack();
+                break;
             case '\n':
                 printf("\t%.8g\n", pop());
                 if(intconvert)
@@ -129,46 +138,74 @@ double pop(void)
 /* Print top element of stack */
 void printstack(void)
 {
-    if(sp>0)
+    int i;
+    for(i=0; val[i]!='\0' && i<MAXVAL; i++)
     {
-        printf("%g\n", val[sp-1]);
+        ;
+    }
+
+    if(i==0)
+    {
+        printf("error: stack empty\n");
     }
     else
     {
-        printf("error: stack empty\n");
+        printf("Top of stack: %g\n", val[--i]);
     }
 }
 
 /* Duplicate top element of stack */
 void duplicate(void)
 {
-    if(sp>0 && sp<MAXVAL)
+    int i;
+    for(i=0; val[i]!='\0' && i<MAXVAL; i++)
     {
-        val[sp] = val[sp - 1];
-        sp++;
+        ;
     }
-    else if(sp<=0)
+
+    if(i==0)
     {
         printf("error: stack empty\n");
     }
-    else
+    else if(i==MAXVAL)
     {
         printf("error: stack full\n");
+    }
+    else
+    {
+        int temp = i;
+        val[temp] = val[--i];
     }
 }
 
 /* Swap top two elements of stack */
 void swapstack(void)
 {
-    if(sp>1)
+    int i;
+    for(i=0; val[i]!='\0' && i<MAXVAL; i++)
     {
-        double temp = val[sp-1];
-        val[sp-1] = val[sp-2];
-        val[sp-2] = val[sp-1];
+        ;
+    }
+
+    if(i==0)
+    {
+        printf("error: stack empty\n");
     }
     else
     {
-        printf("error: stack has 1 or fewer elements\n");
+        int temp = i-2;
+        double dtemp = val[--i];
+        val[i] = val[temp];
+        val[temp] = dtemp;
+    }
+}
+
+/* Clears the stack */
+void clearstack(void)
+{
+    for(int i=0; val[i]!='\0' && i<MAXVAL; i++)
+    {
+        val[i] = '\0';
     }
 }
 
