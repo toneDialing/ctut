@@ -31,6 +31,7 @@ e.g. "4 5 +" equals 9 */
 /* Add access to functions sin, exp, and pow */
 /* Add ability to assign values to variables x, y, and z */
 /* Add ability to reference most recent answer in equations */
+/* Add ability to quit without using EOF */
 /* Largely assumes valid input */
 
 int main(void)
@@ -43,7 +44,7 @@ int main(void)
     printf("Welcome to the reverse Polish calculator!\n");
     printf("Begin entering operations or type 'g' for a guide\n");
 
-    while((type = getop(s)) != EOF)
+    while((type = getop(s)) != EOF && type != 'q')
     {
         switch (type)
         {
@@ -59,6 +60,7 @@ int main(void)
                 printf("\tEnter 'd' to duplicate top of stack\n");
                 printf("\tEnter 's' to swap top two elements of stack\n");
                 printf("\tEnter 'c' to clear the stack\n");
+                printf("\tEnter 'q' to quit\n");
                 while((c=getchar())!='\n')
                 {
                     ;
