@@ -8,7 +8,7 @@
 /* My problem with this calculator is that I can't enter any input without triggering '\n'.
 Perhaps there's a way to submit input without doing this, but I don't know what it is.
 Because '\n' is triggered in the switch every time input is entered, it causes the calculator
-to be a little buggy, but I'll ignore that feature for now because that's how K&R built it. */ 
+to be a little buggy, but I'll ignore that feature for now because that's how K&R built it. */
 
 int getop(char *s);
 void push(double);
@@ -109,7 +109,8 @@ int main(void)
 #define MAXVAL 100 // Max depth of val stack
 
 int sp = 0; // Next free stack position
-double val[MAXVAL];
+double val[MAXVAL]; /* Note this array is initialized to all zeros ('\0') by default,
+                    since it is a global variable */
 
 /* push: push f onto value stack */
 void push(double f)
