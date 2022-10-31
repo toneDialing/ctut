@@ -22,8 +22,6 @@ void duplicate(void);
 void swapstack(void);
 void clearstack(void);
 
-double x, y, z, answer;
-
 /* Reverse Polish calculator:
 Input must be entered with spaces separating digits. Operator appears after necessary operands.
 e.g. "4 5 +" equals 9 */
@@ -31,12 +29,14 @@ e.g. "4 5 +" equals 9 */
 /* Add negative numbers */
 /* Add commands to print, duplicate, or swap top of stack */
 /* Add access to functions sin, exp, and pow */
+/* Add ability to assign values to variables x, y, and z */
+/* Add ability to reference most recent answer in equations */
 /* Largely assumes valid input */
 
 int main(void)
 {
     int type, intconvert, c;
-    double op2;
+    double op2, x, y, z, answer;
     char *s = malloc(MAXOP*sizeof(char));
     intconvert = 0; // Warns user of conversion to integer operands at any point in calculation
 
