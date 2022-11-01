@@ -15,7 +15,7 @@ to be a little buggy, but I'll ignore that feature for now because that's how K&
 /* Update: I've fixed this somewhat by adding a while loop to ignore subsequent input through '\n'
 for certain commands, such as printing top of stack or assigning variables */
 
-/* Replaces getch() and ungetch() with getline() */
+/* Replaces getch() and ungetch() with readline() */
 
 void push(double);
 double pop(void);
@@ -171,6 +171,8 @@ int main(void)
                     ;
                 }
                 break;
+            case 'q':
+                return 0;
             case '\n':
                 answer = pop();
                 printf("\t%.8g\n", answer);
