@@ -14,7 +14,7 @@ to be a little buggy, but I'll ignore that feature for now because that's how K&
 /* Update: I've fixed this somewhat by adding a while loop to ignore subsequent input through '\n'
 for certain commands, such as printing top of stack or assigning variables */
 
-/* Aim to replace ungetch() with static internal variable in getop() */
+/* Replace ungetch() with static internal variable in getop() */
 
 int getop(char *s);
 void push(double);
@@ -296,12 +296,14 @@ void ungetch(int);
 /* getop: get next operator or numeric operand */
 int getop(char *s)
 {
-    int i, c, c_spare;
+    int i, c;
+    static int buf;
 
-    while((s[0] = c = getch()) == ' ' || c == '\t')
+    while((s[0] = c = ((buf != 0) ? buf : getchar())) == ' ' || c == '\t')
     {
-        ;
+        buf = 0;
     }
+    buf = 0;
     s[1] = '\0';
 
     if(!isdigit(c) && c!='.' && c!='-') // Not a number
@@ -312,55 +314,32 @@ int getop(char *s)
 
     if(c=='-') // Check to see if '-' denotes a negative number or a minus sign
     {
-        s[1] = c_spare = getch();
-        ungetch(c_spare);
-        if(!isdigit(c_spare))
+        s[1] = buf = getchar();
+        if(!isdigit(buf))
         {
             return c;
         }
-        c = c_spare;
+        c = buf;
+        buf = 0;
+        i++;
     }
 
     if(isdigit(c)) // Collect integer part
     {
-        while(isdigit(s[++i] = c = getch()))
+        while(isdigit(s[++i] = c = getchar()))
         {
             ;
         }
     }
     if(c=='.') // Collect fraction part
     {
-        while(isdigit(s[++i] = c = getch()))
+        while(isdigit(s[++i] = c = getchar()))
         {
             ;
         }
     }
+    buf = c;
     s[i] = '\0';
 
-    if(c!=EOF)
-    {
-        ungetch(c);
-    }
     return NUMBER;
-}
-
-#define BUFSIZE 100
-
-char buf[BUFSIZE]; // Buffer for ungetch
-int bufp = 0; // Next free position in buf
-
-/* Get a (possibly pushed back) character */
-int getch(void)
-{
-    return (bufp > 0) ? buf[--bufp] : getchar();
-}
-
-/* Push character back on input */
-void ungetch(int c)
-{
-    if(bufp>=BUFSIZE)
-    {
-        printf("ungetch: too many characters\n");
-    }
-    else buf[bufp++] = c;
 }
