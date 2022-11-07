@@ -290,9 +290,6 @@ void clearstack(void)
     }
 }
 
-int getch(void);
-void ungetch(int);
-
 /* getop: get next operator or numeric operand */
 int getop(char *s)
 {
