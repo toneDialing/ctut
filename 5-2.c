@@ -1,21 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <math.h>
 
 /* Modified getint() to perform ungetch() if it encounters an isolated '+' or '-' */
 
 /* Create getfloat() */
 
-int getint(int *pn);
+int getfloat(double *pn);
 
 int main(void)
 {
-    int *pn = malloc(sizeof(int));
+    double *pn = malloc(sizeof(double));
 
-    printf("Hello! Please enter integer: ");
-    if(getint(pn)>0)
+    printf("Hello! Please enter number: ");
+    if(getfloat(pn)>0)
     {
-        printf("Your integer: %d\n", *pn);
+        printf("Your number: %g\n", *pn);
     }
     else printf("Invalid input\n");
 
@@ -26,10 +27,10 @@ int main(void)
 int getch(void);
 void ungetch(int);
 
-/* getint: get next integer from input into *pn */
-int getint(int *pn)
+/* getfloat: get next digit from input into *pn, allowing for sign and decimal point */
+int getfloat(double *pn)
 {
-    int c, sign;
+    int c, i, sign;
 
     while(isspace(c = getch())) //skip white space
         ;
@@ -51,6 +52,18 @@ int getint(int *pn)
     {
         *pn = 10 * *pn + (c-'0');
     }
+    if(c=='.')
+    {
+        c = getch();
+    }
+    for(i=1; isdigit(c); c = getch(), i++)
+    {
+        *pn = *pn + (c-'0')/(pow(10, i));
+        /* IMPORTANT NOTE: The division operation must contain at least one double to avoid
+        integer evaluation, which would be 0. However, pow() automatically converts i and 10
+        to doubles so it isn't necessary to write 10.0 here. */
+    }
+    
     *pn *= sign;
 
     if(c!=EOF)
