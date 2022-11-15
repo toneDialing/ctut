@@ -5,7 +5,7 @@
 
 void string_concat(char *s, char *t);
 /* Concatenate t to end of s; s must be big enough */
-/* Assumes strings are smaller than MAX_LENGTH */
+/* Assumes concatenated string is smaller than MAX_LENGTH */
 
 int main(void)
 {
