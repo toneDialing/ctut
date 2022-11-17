@@ -10,7 +10,8 @@ static char daytab[2][13] = {
 int day_of_year(int year, int month, int day);
 void month_day(int year, int yearday, int *pmonth, int *pday);
 
-/* Converts day of year (i.e. 1-365/366) into month and day, and vice-versa */
+/* Converts month and day into day of year (i.e. 1-365/366), and then vice-versa,
+prompting the user for fresh input both times */
 /* Assumes valid input and doesn't check for validity of dates */
 int main(void)
 {
