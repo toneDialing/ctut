@@ -23,6 +23,7 @@ int main(void)
     *daytab = noleap; // There may well have been a cleaner way to do this, but the book didn't
     *(daytab+1) = yesleap; // really specify how to init. pointer arrays beyond string constants
 
+    /* Convert month/day to yearday */
     printf("Enter year: ");
     scanf("%d", &year);
     if(year<1)
@@ -41,6 +42,7 @@ int main(void)
         printf("Day of year is %d\n", yearday);
     }
 
+    /* Convert yearday to month/day */
     printf("Enter year: ");
     scanf("%d", &year);
     if(year<1)
