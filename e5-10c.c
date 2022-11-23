@@ -6,6 +6,9 @@
 int get_line(char *line, int max);
 
 /* Print lines that match pattern from 1st arg */
+/* Allows for options, but these options may be combined indefinitely. This is by design here,
+but it may potentially be confusing to allow -xxxnnnxnxnxnnx as a valid method of designating
+the options -x and -n */
 int main(int argc, char *argv[])
 {
     char line[MAXLINE];
