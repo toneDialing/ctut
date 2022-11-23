@@ -6,6 +6,10 @@
 
 /* Pull code from previous Polish calculator */
 /* Need push() and pop() from 4-10.c, don't need readline(), need atof() and much of 4-10's main() */
+
+void push(double);
+double pop(void);
+
 int main(int argc, char *argv[])
 {
     if(argc<4)
@@ -13,4 +17,19 @@ int main(int argc, char *argv[])
         printf("Insufficient operands\n");
         return 0;
     }
+}
+
+#define MAXVAL 100
+
+int stack_position = 0;
+double stack[MAXVAL];
+
+void push(double f)
+{
+
+}
+
+double pop(void)
+{
+
 }
