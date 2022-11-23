@@ -5,7 +5,7 @@
 /* Don't need to store variables or do advanced operations */
 
 /* Pull code from previous Polish calculator */
-
+/* Need push() and pop() from 4-10.c, don't need readline(), need atof() and much of 4-10's main() */
 int main(int argc, char *argv[])
 {
     if(argc<4)
