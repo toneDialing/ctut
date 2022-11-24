@@ -4,12 +4,13 @@
 
 /* Create a reverse Polish calculator that functions entirely within the command line */
 /* Don't need to store variables or do advanced operations */
-/* Assumes valid input */
+/* ASSUMES VALID INPUT */
 
 void push(double);
 double pop(void);
 
-/* For some reason '*' causes a bug when entered as a command-line argument.
+/* WARNING:
+    For some reason '*' causes a bug when entered as a command-line argument.
     I assume '*' is a reserved command within my version of Bash.
     I changed '*' to 'x' instead to allow for multiplication. */
 int main(int argc, char *argv[])
