@@ -4,13 +4,14 @@
 
 /* Create a reverse Polish calculator that functions entirely within the command line */
 /* Don't need to store variables or do advanced operations */
-
-/* Pull code from previous Polish calculator */
-/* Need push() and pop() from 4-10.c, don't need readline(), need atof() and much of 4-10's main() */
+/* Assumes valid input */
 
 void push(double);
 double pop(void);
 
+/* For some reason '*' causes a bug when entered as a command-line argument.
+    I assume '*' is a reserved command within my version of Bash.
+    I changed '*' to 'x' instead to allow for multiplication. */
 int main(int argc, char *argv[])
 {
     int c;
@@ -18,7 +19,7 @@ int main(int argc, char *argv[])
 
     for(int i = 1; i<argc; i++)
     {
-        c=*argv[i];
+        c = *argv[i];
         if(!isdigit(c) && c != '.' && c != '-')
         {
             switch(c)
@@ -30,7 +31,7 @@ int main(int argc, char *argv[])
                 case '+':
                     push(pop() + pop());
                     break;
-                case '*':
+                case 'x':
                     push(pop() * pop());
                     break;
                 case '/':
@@ -45,7 +46,7 @@ int main(int argc, char *argv[])
                     }
                     break;
                 default:
-                    printf("error: unknown command %c\n", s[i]);
+                    printf("error: unknown command %c\n", c);
                     break;
             }
         }
@@ -53,25 +54,25 @@ int main(int argc, char *argv[])
         {
             if(c=='-')
             {
-                if(!*++argv[i])
+                if(!(*(argv[i]+1)))
                 {
                     op2 = pop();
                     push(pop() - op2);
                 }
                 else
                 {
-                    push(atof(*argv[i]));
+                    push(atof(argv[i]));
                 }
             }
             else
             {
-                push(atof(*argv[i]));
+                push(atof(argv[i]));
             }
         }
     }
 
     answer = pop();
-    printf("\t%.8g\n", answer);
+    printf("Answer: %.8g\n", answer);
 
     return 0;
 }
