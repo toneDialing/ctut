@@ -1,7 +1,6 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
-#include <ctype.h>
+#include <string.h>
 
 #define MAX_LINES 1000  /* max number of lines to be read */
 #define STORAGE_SIZE 100000  /* storage space allocated for all lines */
