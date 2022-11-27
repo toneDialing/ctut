@@ -5,36 +5,47 @@
 
 #define MAX_LINES 1000  /* max number of lines to be read */
 #define STORAGE_SIZE 100000  /* storage space allocated for all lines */
-#define LAST_LINES 10   /* default number of previous lines to be printed */
+#define DEFAULT_LAST_LINES 10   /* default number of previous lines to be printed */
 
 char *lineptr[MAX_LINES]; /* pointers to text lines */
 
 int readlines(char *lineptr[], int nlines, char storage[]);
 void writelines(char *lineptr[], int nlines);
 
-/* writelines() is not currently used */
 /* Prints last n lines of input. By default n = 10, but can be set with -n option in command line */
 int main(int argc, char *argv[])
 {
     int nlines; /* number of input lines read */
-    int n = LAST_LINES;
+    int n = DEFAULT_LAST_LINES;
     char line_storage[STORAGE_SIZE];
-    char **p = lineptr;
+    char **p = lineptr; /* I'm not sure why I can't increment lineptr directly.
+                        Perhaps because it's declared as an array rather than a pointer.
+                        When it gets passed through a function, as in writelines() in 5-7.c,
+                        then it can be incremented, but of course at that point it's been passed
+                        to the function as a pointer. */
 
-    if((*++argv)[0] == '-')
+    if(argc>1)
     {
-        if(isdigit(**++argv))
+        if((*++argv)[0] == '-')
         {
-            n = atof(*argv);
+            n = atoi(*argv);
+            n = -n;
+        }
+
+        if(n<1) /* If n is invalid, return n to default */
+        {
+            n = DEFAULT_LAST_LINES;
         }
     }
 
     if((nlines = readlines(lineptr, MAX_LINES, line_storage)) >= 0)
         {
-            while(nlines-- > n)
+            while(nlines > n)
             {
                 p++;
+                nlines--;
             }
+
             while(nlines-- > 0)
             {
                 printf("%s\n", *p++);
@@ -73,15 +84,6 @@ int readlines(char *lineptr[], int maxlines, char storage[])
         }
     }
     return nlines;
-}
-
-/* writelines: write output lines */
-void writelines(char *lineptr[], int nlines)
-{
-    while(nlines-- > 0)
-    {
-        printf("%s\n", *lineptr++);
-    }
 }
 
 /* get_line: get line into s, return length */
