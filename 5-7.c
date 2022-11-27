@@ -35,7 +35,6 @@ int main(void)
 
 #define MAXLEN 1000 /* max length of any input line */
 int get_line(char *, int);
-char *alloc(int);
 
 /* readlines: read input lines */
 int readlines(char *lineptr[], int maxlines, char storage[])
