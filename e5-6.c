@@ -120,7 +120,7 @@ int get_line(char *s, int lim)
 
 #define ALLOCSIZE 100000 /* size of available space */
 
-static char allocbuf[ALLOCSIZE]; /* storage fo alloc */
+static char allocbuf[ALLOCSIZE]; /* storage for alloc */
 static char *allocp = allocbuf; /* next free position */
 
 char *alloc(int n) /* return pointer to n characters */
