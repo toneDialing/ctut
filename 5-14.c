@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* Build "-r" functionality first, then handle command-line combos */
-
 #define MAXLINES 5000       /* max #lines to be sorted */
 char *lineptr[MAXLINES];    /* pointers to text lines */
 
@@ -15,7 +13,8 @@ int num_cmp(char *, char *);
 int str_cmp(char *s, char *t);
 
 /* Sort input lines */
-/* Assumes valid input */
+/* Assumes valid input -- note that num_cmp() always returns 0 when comparing non-digits,
+    so sorting words with num_cmp() creates nonsense as qsort() only executes certain swaps. */
 /* Add "-r" command-line option, which sorts in reverse order. Reversal is indicated through
     an additional parameter to q_sort() */
 int main(int argc, char *argv[])
