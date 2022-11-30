@@ -8,6 +8,8 @@
 /* if there's an error, be able to reset (while != '\n') *
 * Fixed within main() so far, check rest of code for error prints */
 /* if no data type, assume int */
+/* ^^ actually this encourages bad practice and may no longer be true with updated C anyway,
+    so don't support this option */
 
 enum {NAME, PARENS, BRACKETS};
 
