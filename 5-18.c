@@ -4,12 +4,9 @@
 
 #define MAXTOKEN 100
 
-/* allow for trailing spaces/tabs after declaration */
-/* if there's an error, be able to reset (while != '\n') *
-* Fixed within main() so far, check rest of code for error prints */
-/* if no data type, assume int */
-/* ^^ actually this encourages bad practice and may no longer be true with updated C anyway,
-    so don't support this option */
+/* Added error recovery, so program can properly handle next input line upon encountering an error.
+*   Error messaging is mildly redundant, but I don't think that's a problem. Cascading errors
+*   are normal in compiling anyway. */
 
 enum {NAME, PARENS, BRACKETS};
 
@@ -20,6 +17,7 @@ int gettoken(void);
 int getch(void);
 void ungetch(int);
 int tokentype;              /* type of last token */
+int error;                  /* notifies presence of syntax error */
 char token[MAXTOKEN];       /* last token string */
 char name[MAXTOKEN];        /* identifier name */
 char datatype[MAXTOKEN];    /* data type = char, int, etc. */
@@ -31,21 +29,31 @@ int main(void)
     while(gettoken() != EOF)
     {
         strcpy(datatype, token);    /* 1st token on line is the data type */
+        if(!isalpha(datatype[0]))   /* if datatype isn't a variable name, process error */
+        {
+            printf("error: datatype must be a valid variable name\n");
+            error = 1;
+        }
         out[0] = '\0';
         dcl();                      /* parse rest of line */
         while(tokentype == ' ' || tokentype == '\t')
         {
             tokentype = getch();
         }
-        if(tokentype != '\n')
+        if(tokentype != '\n' || error > 0)
         {
-            while((tokentype = getch())!='\n');
+            while(tokentype!='\n')
+            {
+                tokentype = getch();
+            }
             printf("syntax error\n");
+            error = 0;
         }
         else
         {
             printf("%s: %s %s\n", name, out, datatype);
         }
+        token[0] = '\0';            /* refresh token for next input line */
     }
     return 0;
 }
@@ -77,6 +85,8 @@ void dirdcl(void)
         if(tokentype != ')')
         {
             printf("error: missing )\n");
+            error = 1;
+            return;     /* don't allow dirdcl() to continue calling gettoken() below */
         }
     }
     else if(tokentype == NAME) /* variable name */
@@ -86,6 +96,7 @@ void dirdcl(void)
     else
     {
         printf("error: expected name or (dcl)\n");
+        error = 1;
     }
 
     while((type = gettoken()) == PARENS || type == BRACKETS)
