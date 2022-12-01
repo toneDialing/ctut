@@ -7,6 +7,7 @@
 /* Added error recovery, so program can properly handle next input line upon encountering an error.
 *   Error messaging is mildly redundant, but I don't think that's a problem. Cascading errors
 *   are normal in compiling anyway. */
+/* Added const qualifiers */
 
 /* Expand to handle declarations with function argument types and const qualifiers */
 
@@ -31,6 +32,19 @@ int main(void)
     while(gettoken() != EOF)
     {
         strcpy(datatype, token);    /* 1st token on line is the data type */
+        if(strcmp(datatype, "const")==0)
+        {
+            if(gettoken()==NAME)
+            {
+                strcat(datatype, " ");
+                strcat(datatype, token);
+            }
+            else
+            {
+                printf("error: datatype must be a valid variable name\n");
+                error = 1;
+            }
+        }
         if(!isalpha(datatype[0]))   /* if datatype isn't a variable name, process error */
         {
             printf("error: datatype must be a valid variable name\n");
