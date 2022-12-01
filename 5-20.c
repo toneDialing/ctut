@@ -113,6 +113,7 @@ void dirdcl(void)
     {
         printf("error: expected name or (dcl)\n");
         error = 1;
+        return;         /* don't allow dirdcl() to continue calling gettoken() below */
     }
 
     while((type = gettoken()) == PARENS || type == BRACKETS)
