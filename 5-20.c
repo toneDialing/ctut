@@ -114,6 +114,7 @@ void dirdcl(void)
         // else do this:
         strcpy(name, token);
         // var_name = 1;
+        // PROBLEM: function_parameter() will call dirdcl() and overwrite name
     }
     else
     {
