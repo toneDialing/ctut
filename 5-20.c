@@ -107,7 +107,13 @@ void dirdcl(void)
     }
     else if(tokentype == NAME) /* variable name */
     {
+        // if(var_name == 1) then run function_parameter()
+            // at end of function_parameter(), need to strcat(out, " function i returning")
+            // later, printf("function i:\n\t[parameter]\n\t[parameter]\n");
+            // need to store the parameter strings in an array
+        // else do this:
         strcpy(name, token);
+        // var_name = 1;
     }
     else
     {
