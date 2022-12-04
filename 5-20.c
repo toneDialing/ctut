@@ -10,6 +10,7 @@
 /* Added const qualifiers */
 
 /* Expand to handle declarations with function argument types and const qualifiers */
+/* Create new main()-like function just for function parameters; don't alter dcl/dirdcl */
 
 enum {NAME, PARENS, BRACKETS};
 
