@@ -16,22 +16,30 @@ enum {NAME, PARENS, BRACKETS};
 
 void dcl(void);
 void dirdcl(void);
+void function_parameter(void);
 
 int gettoken(void);
 int getch(void);
 void ungetch(int);
 int tokentype;              /* type of last token */
 int error;                  /* notifies presence of syntax error */
+int var_name_found;         /* indicates whether variable name has been found yet */
 char token[MAXTOKEN];       /* last token string */
 char name[MAXTOKEN];        /* identifier name */
 char datatype[MAXTOKEN];    /* data type = char, int, etc. */
 char out[1000];             /* output string */
+char *func_parameter_out[100]; /* array of strings for function parameters */
+char **static_fp;                  /* pointer for func_parameter_out */
+char *func_datatype[100];   /* array of strings for function datatypes */
+char **static_fd;                  /* pointer for func_datatype */
 
 /* Convert declaration syntax into plain words */
 int main(void)
 {
     while(gettoken() != EOF)
     {
+        static_fp = func_parameter_out; //NEED TO REFRESH THIS EACH TIME
+        static_fd = func_datatype;
         strcpy(datatype, token);    /* 1st token on line is the data type */
         if(strcmp(datatype, "const")==0)
         {
@@ -75,6 +83,46 @@ int main(void)
     return 0;
 }
 
+void function_parameter(void)
+{
+    char **fp = ++static_fp;
+    char **fd = ++static_fd;
+    strcat(out, " function {");
+    strcpy(*fd, token);
+    if(strcmp(*fd, "const")==0)
+    {
+        if(gettoken()==NAME)
+        {
+            strcat(*fd, " ");
+            strcat(*fd, token);
+        }
+        else
+        {
+            printf("error: datatype must be a valid variable name\n");
+            error = 1;
+        }
+    }
+    if(!isalpha((*fd)[0]))   /* if datatype isn't a variable name, process error */
+    {
+        printf("error: datatype must be a valid variable name\n");
+        error = 1;
+    }
+    dcl();
+    if(tokentype == ',')
+    {
+        strcat(*fp, ", ");
+        function_parameter();
+    }
+    if(tokentype != ')')
+    {
+            printf("error: missing )\n");
+            error = 1;
+            return;
+    }
+    strcat(out, *fp);
+    strcat(out, "} returning");
+}
+
 /* dcl: parse a declarator */
 void dcl(void)
 {
@@ -87,7 +135,7 @@ void dcl(void)
     dirdcl();
     while(ns-- > 0)
     {
-        strcat(out, " pointer to");
+        strcat((var_name_found ? *static_fp : out), " pointer to");
     }
 }
 
@@ -113,7 +161,15 @@ void dirdcl(void)
             // later, printf("function i:\n\t[parameter]\n\t[parameter]\n");
             // need to store the parameter strings in an array
         // else do this:
-        strcpy(name, token);
+        if(var_name_found)
+        {
+            function_parameter();
+        }
+        else
+        {
+            strcpy(name, token);
+            var_name_found = 1;
+        }
         // var_name = 1;
         // PROBLEM: function_parameter() will call dirdcl() and overwrite name
         // Solution: replace name with "function ? name : *p"
@@ -129,13 +185,13 @@ void dirdcl(void)
     {
         if(type == PARENS)
         {
-            strcat(out, " function returning");
+            strcat((var_name_found ? *static_fp : out), " function returning");
         }
         else
         {
-            strcat(out, " array");
-            strcat(out, token);
-            strcat(out, " of");
+            strcat((var_name_found ? *static_fp : out), " array");
+            strcat((var_name_found ? *static_fp : out), token);
+            strcat((var_name_found ? *static_fp : out), " of");
         }
     }
 }
