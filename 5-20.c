@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
@@ -28,9 +29,9 @@ char token[MAXTOKEN];       /* last token string */
 char name[MAXTOKEN];        /* identifier name */
 char datatype[MAXTOKEN];    /* data type = char, int, etc. */
 char out[1000];             /* output string */
-char *func_parameter_out[100]; /* array of strings for function parameters */
+char *func_parameter_out[MAXTOKEN]; /* array of strings for function parameters */
 char **static_fp;                  /* pointer for func_parameter_out */
-char *func_datatype[100];   /* array of strings for function datatypes */
+char *func_datatype[MAXTOKEN];   /* array of strings for function datatypes */
 char **static_fd;                  /* pointer for func_datatype */
 
 /* Convert declaration syntax into plain words */
@@ -38,6 +39,11 @@ int main(void)
 {
     while(gettoken() != EOF)
     {
+        for(int i=0; i<MAXTOKEN; i++)
+        {
+            func_parameter_out[i] = malloc(MAXTOKEN*sizeof(char));
+            func_datatype[i] = malloc(MAXTOKEN*sizeof(char));
+        }
         static_fp = func_parameter_out; //NEED TO REFRESH THIS EACH TIME
         static_fd = func_datatype;
         strcpy(datatype, token);    /* 1st token on line is the data type */
@@ -79,6 +85,11 @@ int main(void)
             printf("%s: %s %s\n", name, out, datatype);
         }
         token[0] = '\0';            /* refresh token for next input line */
+        for(int i=0; i<MAXTOKEN; i++)
+        {
+            free(func_parameter_out[i]);
+            free(func_datatype[i]);
+        }
     }
     return 0;
 }
@@ -136,6 +147,8 @@ void dcl(void)
     while(ns-- > 0)
     {
         strcat((var_name_found ? *static_fp : out), " pointer to");
+        /*PROBLEM: var_name_found is marked as true within dirdcl() before this pointer text
+            can be added to out */
     }
 }
 
