@@ -4,13 +4,13 @@
 
 #define MAXTOKEN 100
 #define MAXPARAMETER 100
+#define MAXOUTPUT 10000
 
 /* Added error recovery, so program can properly handle next input line upon encountering an error.
 *   Error messaging is mildly redundant, but I don't think that's a problem. Cascading errors
 *   are normal in compiling anyway. */
 /* Added const qualifiers */
-
-/* Expand to handle declarations with function argument types and const qualifiers */
+/* Added function argument types */
 
 enum {NAME, PARENS, BRACKETS, PARAMETER};
 
@@ -32,7 +32,7 @@ int parameter_count;        /* tracks which parameter is being evaluated */
 char token[MAXTOKEN];       /* last token string */
 char name[MAXTOKEN];        /* identifier name */
 char datatype[MAXTOKEN];    /* data type = char, int, etc. */
-char out[10000];            /* output string */
+char out[MAXOUTPUT];        /* output string */
 char *p_datatype[MAXPARAMETER];      /* array of strings for parameter datatypes */
 char *p_out[MAXPARAMETER];           /* array of strings for parameter output */
 
@@ -84,7 +84,7 @@ int main(void)
         {
             /* If i>parameter_count this would cause a segmentation fault, since those elements of
                 p_datatype and p_out were never defined. And if parameter_call were 0, then no
-                elements of p_datatype and p_out would have been defined. */
+                elements of p_datatype and p_out would have been defined in the first place. */
             *p_datatype[i] = '\0';
             *p_out[i] = '\0';
         }
@@ -147,9 +147,10 @@ void dirdcl(void)
         else if(type == PARAMETER)
         {
             strcat(out, " function {");
-            parameter_call = 1;
+            parameter_call = 1; /* parameter_call only exists to avoid seg faults; see main() */
+            int bookmark = parameter_count; /* temp tracker of parameter_count at this moment */
             parameter();
-            strcat(out, *p_out);
+            strcat(out, p_out[bookmark]);
             strcat(out, "} returning");
         }
         else
@@ -198,10 +199,11 @@ void parameter(void)
     if(tokentype == ',')
     {
         parameter_count++;
+        int next_parameter = parameter_count;
         parameter();
         strcat(p_out[local_parameter_count], p_datatype[local_parameter_count]);
         strcat(p_out[local_parameter_count], ", ");
-        strcat(p_out[local_parameter_count], p_out[parameter_count]);
+        strcat(p_out[local_parameter_count], p_out[next_parameter]);
     }
     else
     {
