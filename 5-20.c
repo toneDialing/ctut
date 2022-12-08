@@ -1,51 +1,46 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
 #define MAXTOKEN 100
+#define MAXPARAMETER 100
+#define MAXOUTPUT 10000
 
 /* Added error recovery, so program can properly handle next input line upon encountering an error.
 *   Error messaging is mildly redundant, but I don't think that's a problem. Cascading errors
 *   are normal in compiling anyway. */
 /* Added const qualifiers */
+/* Added function argument types */
 
-/* Expand to handle declarations with function argument types and const qualifiers */
-/* Create new main()-like function just for function parameters; don't alter dcl/dirdcl */
+enum {NAME, PARENS, BRACKETS, PARAMETER};
 
-enum {NAME, PARENS, BRACKETS};
-
+/* Functions listed in order of descending nesting */
 void dcl(void);
 void dirdcl(void);
-void function_parameter(void);
+void parameter(void);
+void para_dcl(void);
+void dirpara_dcl(void);
 
 int gettoken(void);
 int getch(void);
 void ungetch(int);
 int tokentype;              /* type of last token */
 int error;                  /* notifies presence of syntax error */
-int var_name_found;         /* indicates whether variable name has been found yet */
+int name_found;             /* notifies whether variable name is already found */
+int parameter_call;         /* notifies whether parameter() has been called */
+int parameter_count;        /* tracks which parameter is being evaluated */
 char token[MAXTOKEN];       /* last token string */
 char name[MAXTOKEN];        /* identifier name */
 char datatype[MAXTOKEN];    /* data type = char, int, etc. */
-char out[1000];             /* output string */
-char *func_parameter_out[MAXTOKEN]; /* array of strings for function parameters */
-char **static_fp;                  /* pointer for func_parameter_out */
-char *func_datatype[MAXTOKEN];   /* array of strings for function datatypes */
-char **static_fd;                  /* pointer for func_datatype */
+char out[MAXOUTPUT];        /* output string */
+char *p_datatype[MAXPARAMETER];      /* array of strings for parameter datatypes */
+char *p_out[MAXPARAMETER];           /* array of strings for parameter output */
 
 /* Convert declaration syntax into plain words */
 int main(void)
 {
     while(gettoken() != EOF)
     {
-        for(int i=0; i<MAXTOKEN; i++)
-        {
-            func_parameter_out[i] = malloc(MAXTOKEN*sizeof(char));
-            func_datatype[i] = malloc(MAXTOKEN*sizeof(char));
-        }
-        static_fp = func_parameter_out; //NEED TO REFRESH THIS EACH TIME
-        static_fd = func_datatype;
         strcpy(datatype, token);    /* 1st token on line is the data type */
         if(strcmp(datatype, "const")==0)
         {
@@ -84,54 +79,20 @@ int main(void)
         {
             printf("%s: %s %s\n", name, out, datatype);
         }
-        token[0] = '\0';            /* refresh token for next input line */
-        for(int i=0; i<MAXTOKEN; i++)
+        token[0] = '\0';            /* refresh tokens etc. for next input line */
+        for(int i=0; parameter_call && i<=parameter_count; i++)
         {
-            free(func_parameter_out[i]);
-            free(func_datatype[i]);
+            /* If i>parameter_count this would cause a segmentation fault, since those elements of
+                p_datatype and p_out were never defined. And if parameter_call were 0, then no
+                elements of p_datatype and p_out would have been defined in the first place. */
+            *p_datatype[i] = '\0';
+            *p_out[i] = '\0';
         }
+        parameter_count = 0;
+        parameter_call = 0;
+        name_found = 0;
     }
     return 0;
-}
-
-void function_parameter(void)
-{
-    char **fp = ++static_fp;
-    char **fd = ++static_fd;
-    strcat(out, " function {");
-    strcpy(*fd, token);
-    if(strcmp(*fd, "const")==0)
-    {
-        if(gettoken()==NAME)
-        {
-            strcat(*fd, " ");
-            strcat(*fd, token);
-        }
-        else
-        {
-            printf("error: datatype must be a valid variable name\n");
-            error = 1;
-        }
-    }
-    if(!isalpha((*fd)[0]))   /* if datatype isn't a variable name, process error */
-    {
-        printf("error: datatype must be a valid variable name\n");
-        error = 1;
-    }
-    dcl();
-    if(tokentype == ',')
-    {
-        strcat(*fp, ", ");
-        function_parameter();
-    }
-    if(tokentype != ')')
-    {
-            printf("error: missing )\n");
-            error = 1;
-            return;
-    }
-    strcat(out, *fp);
-    strcat(out, "} returning");
 }
 
 /* dcl: parse a declarator */
@@ -146,9 +107,7 @@ void dcl(void)
     dirdcl();
     while(ns-- > 0)
     {
-        strcat((var_name_found ? *static_fp : out), " pointer to");
-        /*PROBLEM: var_name_found is marked as true within dirdcl() before this pointer text
-            can be added to out */
+        strcat(out, " pointer to");
     }
 }
 
@@ -169,23 +128,8 @@ void dirdcl(void)
     }
     else if(tokentype == NAME) /* variable name */
     {
-        // if(var_name == 1) then run function_parameter()
-            // at end of function_parameter(), need to strcat(out, " function i returning")
-            // later, printf("function i:\n\t[parameter]\n\t[parameter]\n");
-            // need to store the parameter strings in an array
-        // else do this:
-        if(var_name_found)
-        {
-            function_parameter();
-        }
-        else
-        {
-            strcpy(name, token);
-            var_name_found = 1;
-        }
-        // var_name = 1;
-        // PROBLEM: function_parameter() will call dirdcl() and overwrite name
-        // Solution: replace name with "function ? name : *p"
+        strcpy(name, token);
+        name_found = 1;
     }
     else
     {
@@ -194,17 +138,159 @@ void dirdcl(void)
         return;         /* don't allow dirdcl() to continue calling gettoken() below */
     }
 
-    while((type = gettoken()) == PARENS || type == BRACKETS)
+    while((type = gettoken()) == PARENS || type == BRACKETS || type == PARAMETER)
     {
         if(type == PARENS)
         {
-            strcat((var_name_found ? *static_fp : out), " function returning");
+            strcat(out, " function returning");
+        }
+        else if(type == PARAMETER)
+        {
+            strcat(out, " function {");
+            parameter_call = 1; /* parameter_call only exists to avoid seg faults; see main() */
+            int bookmark = parameter_count; /* temp tracker of parameter_count at this moment */
+            parameter();
+            strcat(out, p_out[bookmark]);
+            strcat(out, "} returning");
         }
         else
         {
-            strcat((var_name_found ? *static_fp : out), " array");
-            strcat((var_name_found ? *static_fp : out), token);
-            strcat((var_name_found ? *static_fp : out), " of");
+            strcat(out, " array");
+            strcat(out, token);
+            strcat(out, " of");
+        }
+    }
+}
+
+void parameter(void)
+{
+    int local_parameter_count = parameter_count;
+        /* keeps track of parameter_count within this specific call */
+    char alloc_data[MAXTOKEN], alloc_out[MAXTOKEN];
+    p_datatype[parameter_count] = alloc_data;
+    p_out[parameter_count] = alloc_out;
+
+    gettoken();
+    strcpy(p_datatype[parameter_count], token);    /* 1st token on line is the data type */
+    if(strcmp(p_datatype[parameter_count], "const")==0)
+    {
+        if(gettoken()==NAME)
+        {
+            strcat(p_datatype[parameter_count], " ");
+            strcat(p_datatype[parameter_count], token);
+        }
+        else
+        {
+            printf("error: datatype must be a valid variable name\n");
+            error = 1;
+        }
+    }
+    if(!isalpha(*p_datatype[parameter_count]))   /* if datatype isn't a variable name, process error */
+    {
+        printf("error: datatype must be a valid variable name\n");
+        error = 1;
+    }
+    *p_out[parameter_count] = '\0';
+    para_dcl();
+    while(tokentype == ' ' || tokentype == '\t')
+    {
+        tokentype = getch();
+    }
+    if(tokentype == ',')
+    {
+        parameter_count++;
+        int next_parameter = parameter_count;
+        parameter();
+        strcat(p_out[local_parameter_count], p_datatype[local_parameter_count]);
+        strcat(p_out[local_parameter_count], ", ");
+        strcat(p_out[local_parameter_count], p_out[next_parameter]);
+    }
+    else
+    {
+        strcat(p_out[local_parameter_count], p_datatype[local_parameter_count]);
+    }
+    if(tokentype != ')')
+    {
+        printf("error: expected ')' in function parameter\n");
+        error = 1;
+    }
+}
+
+void para_dcl(void)
+{
+    int ns;
+
+    for(ns=0; gettoken()=='*'; ) /* count # of *'s */
+    {
+        ns++;
+    }
+    dirpara_dcl();
+    while(ns-- > 0)
+    {
+        strcat(p_out[parameter_count], "pointer to ");
+    }
+}
+
+void dirpara_dcl(void)
+{
+    int type;
+
+    if(tokentype == '(') /* (para_dcl) */
+    {
+        para_dcl();
+        if(tokentype != ')')
+        {
+            printf("error: missing )\n");
+            error = 1;
+            return;     /* don't allow dirpara_dcl() to continue calling gettoken() below */
+        }
+    }
+    /* Because dirpara_dcl can be empty, we must check for each condition in the while loop below
+        before calling gettoken() again */
+    else if(tokentype == PARENS)
+    {
+        strcat(p_out[parameter_count], "function returning ");
+    }
+    else if(tokentype == PARAMETER)
+    {
+        strcat(p_out[parameter_count], "function {");
+        int bookmark = parameter_count; /* temp tracker of parameter_count at this moment */
+        parameter_count++;
+        parameter();
+        strcat(p_out[bookmark], p_out[bookmark+1]);
+        strcat(p_out[bookmark], "} returning ");
+    }
+    else if(tokentype == BRACKETS)
+    {
+        strcat(p_out[parameter_count], "array");
+        strcat(p_out[parameter_count], token);
+        strcat(p_out[parameter_count], " of ");
+    }
+    else if(tokentype == ')' || tokentype == ',') /* dirpara_dcl is empty */
+    {
+        return;
+    }
+
+    while((type=gettoken()) == PARENS || type == BRACKETS || type == PARAMETER)
+    {
+        if(type == PARENS)
+        {
+            strcat(p_out[parameter_count], "function returning ");
+        }
+        else if(type == BRACKETS)
+        {
+            strcat(p_out[parameter_count], "array");
+            strcat(p_out[parameter_count], token);
+            strcat(p_out[parameter_count], " of ");
+        }
+        else
+        {
+            strcat(p_out[parameter_count], "function {");
+            int bookmark = parameter_count; /* temp tracker of parameter_count at this moment */
+            parameter_count++;
+            parameter();
+            strcat(p_out[bookmark], p_out[bookmark+1]);
+            strcat(p_out[bookmark], "} returning ");
         }
     }
 }
@@ -226,6 +312,11 @@ int gettoken(void)
         {
             strcpy(token, "()");
             return tokentype = PARENS;
+        }
+        else if(name_found && isalpha(c))
+        {
+            ungetch(c);
+            return tokentype = PARAMETER;
         }
         else
         {
