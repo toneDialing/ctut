@@ -3,6 +3,7 @@
 #include <ctype.h>
 
 #define MAXTOKEN 100
+#define MAXPARAMETER 100
 
 /* Added error recovery, so program can properly handle next input line upon encountering an error.
 *   Error messaging is mildly redundant, but I don't think that's a problem. Cascading errors
@@ -26,13 +27,14 @@ void ungetch(int);
 int tokentype;              /* type of last token */
 int error;                  /* notifies presence of syntax error */
 int name_found;             /* notifies whether variable name is already found */
+int parameter_call;         /* notifies whether parameter() has been called */
 int parameter_count;        /* tracks which parameter is being evaluated */
 char token[MAXTOKEN];       /* last token string */
 char name[MAXTOKEN];        /* identifier name */
 char datatype[MAXTOKEN];    /* data type = char, int, etc. */
 char out[1000];             /* output string */
-char *p_datatype[100]       /* array of strings for parameter datatypes */
-char *p_out[100]            /* array of strings for parameter output */
+char *p_datatype[MAXPARAMETER];      /* array of strings for parameter datatypes */
+char *p_out[MAXPARAMETER];           /* array of strings for parameter output */
 
 /* Convert declaration syntax into plain words */
 int main(void)
@@ -77,7 +79,18 @@ int main(void)
         {
             printf("%s: %s %s\n", name, out, datatype);
         }
-        token[0] = '\0';            /* refresh token for next input line */
+        token[0] = '\0';            /* refresh tokens etc. for next input line */
+        for(int i=0; parameter_call && i<=parameter_count; i++)
+        {
+            /* If i>parameter_count this would cause a segmentation fault, since those elements of
+                p_datatype and p_out were never defined. And if parameter_call were 0, then no
+                elements of p_datatype and p_out would have been defined. */
+            *p_datatype[i] = '\0';
+            *p_out[i] = '\0';
+        }
+        parameter_count = 0;
+        parameter_call = 0;
+        name_found = 0;
     }
     return 0;
 }
@@ -134,7 +147,10 @@ void dirdcl(void)
         else if(type == PARAMETER)
         {
             strcat(out, " function {");
+            parameter_call = 1;
             parameter();
+            strcat(out, *p_out);
+            strcat(out, "} returning");
         }
         else
         {
@@ -149,7 +165,11 @@ void parameter(void)
 {
     int local_parameter_count = parameter_count;
         /* keeps track of parameter_count within this specific call */
+    char alloc_data[MAXTOKEN], alloc_out[MAXTOKEN];
+    p_datatype[parameter_count] = alloc_data;
+    p_out[parameter_count] = alloc_out;
 
+    gettoken();
     strcpy(p_datatype[parameter_count], token);    /* 1st token on line is the data type */
     if(strcmp(p_datatype[parameter_count], "const")==0)
     {
@@ -178,18 +198,19 @@ void parameter(void)
     if(tokentype == ',')
     {
         parameter_count++;
-        gettoken();
         parameter();
+        strcat(p_out[local_parameter_count], p_datatype[local_parameter_count]);
+        strcat(p_out[local_parameter_count], ", ");
+        strcat(p_out[local_parameter_count], p_out[local_parameter_count+1]);
+    }
+    else
+    {
+        strcat(p_out[local_parameter_count], p_datatype[local_parameter_count]);
     }
     if(tokentype != ')')
     {
         printf("error: expected ')' in function parameter\n");
         error = 1;
-    }
-    strcat(p_out[local_parameter_count], p_datatype[local_parameter_count]);
-    if(local_parameter_count) // parameter() is nested at least once
-    {
-        
     }
 }
 
@@ -222,6 +243,10 @@ void dirpara_dcl(void)
             return;     /* don't allow dirpara_dcl() to continue calling gettoken() below */
         }
     }
+    else if(tokentype == ')')
+    {
+        return;
+    }
     while((type = gettoken()) == PARENS || type == BRACKETS || type == PARAMETER)
     {
         if(type == PARENS)
@@ -237,7 +262,11 @@ void dirpara_dcl(void)
         else
         {
             strcat(p_out[parameter_count], "function {");
+            int bookmark = parameter_count; /* temp tracker of parameter_count at this moment */
+            parameter_count++;
             parameter();
+            strcat(p_out[bookmark], p_out[bookmark+1]);
+            strcat(p_out[bookmark], "} ");
         }
     }
 }
