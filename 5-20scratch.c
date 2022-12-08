@@ -32,7 +32,7 @@ int parameter_count;        /* tracks which parameter is being evaluated */
 char token[MAXTOKEN];       /* last token string */
 char name[MAXTOKEN];        /* identifier name */
 char datatype[MAXTOKEN];    /* data type = char, int, etc. */
-char out[1000];             /* output string */
+char out[10000];            /* output string */
 char *p_datatype[MAXPARAMETER];      /* array of strings for parameter datatypes */
 char *p_out[MAXPARAMETER];           /* array of strings for parameter output */
 
@@ -201,7 +201,7 @@ void parameter(void)
         parameter();
         strcat(p_out[local_parameter_count], p_datatype[local_parameter_count]);
         strcat(p_out[local_parameter_count], ", ");
-        strcat(p_out[local_parameter_count], p_out[local_parameter_count+1]);
+        strcat(p_out[local_parameter_count], p_out[parameter_count]);
     }
     else
     {
@@ -243,11 +243,33 @@ void dirpara_dcl(void)
             return;     /* don't allow dirpara_dcl() to continue calling gettoken() below */
         }
     }
-    else if(tokentype == ')')
+    /* Because dirpara_dcl can be empty, we must check for each condition in the while loop below
+        before calling gettoken() again */
+    else if(tokentype == PARENS)
+    {
+        strcat(p_out[parameter_count], "function returning ");
+    }
+    else if(tokentype == PARAMETER)
+    {
+        strcat(p_out[parameter_count], "function {");
+        int bookmark = parameter_count; /* temp tracker of parameter_count at this moment */
+        parameter_count++;
+        parameter();
+        strcat(p_out[bookmark], p_out[bookmark+1]);
+        strcat(p_out[bookmark], "} returning ");
+    }
+    else if(tokentype == BRACKETS)
+    {
+        strcat(p_out[parameter_count], "array");
+        strcat(p_out[parameter_count], token);
+        strcat(p_out[parameter_count], " of ");
+    }
+    else if(tokentype == ')' || tokentype == ',') /* dirpara_dcl is empty */
     {
         return;
     }
-    while((type = gettoken()) == PARENS || type == BRACKETS || type == PARAMETER)
+
+    while((type=gettoken()) == PARENS || type == BRACKETS || type == PARAMETER)
     {
         if(type == PARENS)
         {
@@ -266,7 +288,7 @@ void dirpara_dcl(void)
             parameter_count++;
             parameter();
             strcat(p_out[bookmark], p_out[bookmark+1]);
-            strcat(p_out[bookmark], "} ");
+            strcat(p_out[bookmark], "} returning ");
         }
     }
 }
