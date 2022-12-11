@@ -17,6 +17,9 @@ struct tnode *addtree(struct tnode *, char *);
 void treeprint(struct tnode *);
 int getword(char *, int);
 
+/* This example is from the book, but it doesn't free() the storage it allocates with malloc() because
+    they haven't properly discussed those functions yet. */
+
 /* General word frequency count (case-sensitive) */
 int main(void)
 {
