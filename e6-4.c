@@ -81,7 +81,8 @@ struct key *binsearch(char *word, struct key *tab, int n)
 {
     int cond;
     struct key *low = &tab[0];
-    struct key *high = &tab[n];
+    struct key *high = &tab[n]; //tab[n] is first element beyond end of array
+                                //thus, dereferencing is illegal, but it's okay for pointer arithmetic
     struct key *mid;
 
     while(low<high)
