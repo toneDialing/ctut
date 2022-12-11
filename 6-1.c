@@ -100,11 +100,15 @@ int binsearch(char *word, struct key tab[], int n)
     return -1;
 }
 
+int getch(void);
+void ungetch(int);
+void skip_comment(void);
+void skip_preprocessor(void);
+
 /* getword: get next word or character from input */
 int getword(char *word, int lim)
 {
-    int c, getch(void);
-    void ungetch(int);
+    int c;
     char *w = word;
 
     while(isspace(c = getch()));
@@ -115,6 +119,28 @@ int getword(char *word, int lim)
     }
     if(!isalpha(c))
     {
+        int temp;
+        if(c=='_')
+        {
+            while(isalnum(temp = getch()));
+            ungetch(temp);
+        }
+        else if(c=='"')
+        {
+            while((temp=getch())!='"');
+        }
+        else if(c=='/')
+        {
+            if((temp = getch())=='*')
+            {
+                skip_comment();
+            }
+            else ungetch(temp);
+        }
+        else if(c=='#')
+        {
+            skip_preprocessor();
+        }
         *w = '\0';
         return c;
     }
@@ -128,6 +154,39 @@ int getword(char *word, int lim)
     }
     *w = '\0';
     return word[0];
+}
+
+/* skip_comment: causes getch() to skip over all text through end of comment */
+void skip_comment(void)
+{
+    int c;
+
+    while((c=getch())!=EOF)
+    {
+        if(c=='*')
+        {
+            if((c=getch())=='/') return;
+            ungetch(c);
+        }
+    }
+    ungetch(c);
+}
+
+/* skip_preprocessor: causes getch() to skip over all text through end of preprocessor control line(s) */
+void skip_preprocessor(void)
+{
+    int c, temp;
+
+    while((c=getch())!=EOF)
+    {
+        temp = c;
+        if((c=getch())=='\n')
+        {
+            if(temp!='\\') return;
+        }
+        ungetch(c);
+    }
+    ungetch(c);
 }
 
 #define BUFSIZE 100
