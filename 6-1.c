@@ -102,6 +102,7 @@ int binsearch(char *word, struct key tab[], int n)
 
 int getch(void);
 void ungetch(int);
+void skip_irregular_text(int);
 void skip_comment(void);
 void skip_preprocessor(void);
 
@@ -111,39 +112,19 @@ int getword(char *word, int lim)
     int c;
     char *w = word;
 
+    /* ignore white space and other irregular text */
     while(isspace(c = getch()));
-
     if(c!=EOF)
     {
         *w++ = c;
     }
     if(!isalpha(c))
     {
-        int temp;
-        if(c=='_')
-        {
-            while(isalnum(temp = getch()));
-            ungetch(temp);
-        }
-        else if(c=='"')
-        {
-            while((temp=getch())!='"');
-        }
-        else if(c=='/')
-        {
-            if((temp = getch())=='*')
-            {
-                skip_comment();
-            }
-            else ungetch(temp);
-        }
-        else if(c=='#')
-        {
-            skip_preprocessor();
-        }
+        skip_irregular_text(c);
         *w = '\0';
         return c;
     }
+
     for(; --lim>0; w++)
     {
         if(!isalnum(*w = getch()))
@@ -154,6 +135,33 @@ int getword(char *word, int lim)
     }
     *w = '\0';
     return word[0];
+}
+
+/* skip_irregular_text: causes getch() to skip over underscored words, string constants, comments and
+    preprocessor control lines */
+void skip_irregular_text(int c)
+{
+    switch(c) {
+    case '_':
+        while(isalnum(c=getch()));
+        ungetch(c);
+        break;
+    case '"':
+        while((c=getch())!='"');
+        break;
+    case '/':
+        if((c=getch())=='*')
+        {
+            skip_comment();
+        }
+        else ungetch(c);
+        break;
+    case '#':
+        skip_preprocessor();
+        break;
+    default:
+        break;
+    }
 }
 
 /* skip_comment: causes getch() to skip over all text through end of comment */
