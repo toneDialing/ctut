@@ -47,7 +47,7 @@ struct key
 int getword(char *, int);
 int binsearch(char *, struct key *, int);
 
-/* Alter getword() to handle underscores, string constants, comments, and preprocessor control lines */
+/* Altered getword() to handle underscores, string constants, comments, and preprocessor control lines */
 
 /* Count C keywords */
 int main(void)
