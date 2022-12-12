@@ -61,6 +61,7 @@ int getword(char *, int);
     begin with or include underscores, seeing as many variable names use underscores. The
     function ignore_irregular_text() is unchanged but simply isn't called if an underscore is
     encountered. */
+/* As per previous example e6-5.c, calls to malloc() have not been freed */
 /* Error: fails to parse variable names declared following commas, e.g. "int c, n;" misses n.
     I'd also need to be able to handle more complex cases like "int c, getnum(int x, int y), n;" */
 /* Error: fails to parse newlines and tabs in variable declarations, such as with struct {} */
