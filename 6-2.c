@@ -17,8 +17,7 @@ The command-line argument x must be a positive integer\n")
 
 /* Create indicator is_identical, set = 1 for variable names that have at least one 6-character twin.
     Put is_identical in binary tree and when printing alphabetically, only print those valus for which
-    is_identical is true.
-        This will require backtracking one node to set is_identical = 1 whenever first twin is found */
+    is_identical is true. */
 
 /* How to find variable names:
     Look for data type, and valid word that follows is a variable unless it is immediately followed by '('
@@ -50,10 +49,24 @@ struct tnode
     struct tnode *right;
 };
 
-struct tnode *addtree(struct tnode *, char *);
-void treeprint_twins(struct tnode *);
+struct tnode *addtree(struct tnode *, char *, const int);
+void treeprint(struct tnode *);
 int is_variable(char *, int);
+int getword(char *, int);
 
+/* Reads input as C source code and alphabetically prints all groups of variables that match
+    up through their first n characters, where n is determined by a command-line argument. */
+/* I'm supposed to not count words within strings and comments, but I also am not counting words
+    in preprocessor lines. I only modified getword() from 6-1.c to allow for parsing words that
+    begin with or include underscores, seeing as many variable names use underscores. The
+    function ignore_irregular_text() is unchanged but simply isn't called if an underscore is
+    encountered. */
+/* Error: fails to parse variable names declared following commas, e.g. "int c, n;" misses n.
+    I'd also need to be able to handle more complex cases like "int c, getnum(int x, int y), n;" */
+/* Error: fails to parse newlines and tabs in variable declarations, such as with struct {} */
+/* I'm confident I can fix these errors but in the interest of time I'm moving on. I honestly
+    feel as though I've successfully programmed the gist of the problem anyway. */
+/* Assumes valid C program input */
 int main(int argc, char *argv[])
 {
     int c;
@@ -66,8 +79,8 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    const int character_match = atoi(argv[1]);
-    if(character_match<1)
+    const int match_threshold = atoi(argv[1]);
+    if(match_threshold<1)
     {
         PRINT_USAGE_ERROR;
         return 0;
@@ -78,27 +91,98 @@ int main(int argc, char *argv[])
     {
         if(is_variable(word, c))
         {
-            root = addtree(root, word);
+            root = addtree(root, word, match_threshold);
         }
     }
-    treeprint_twins(root);
+    treeprint(root);
     return 0;
 }
 
-struct tnode *addtree(struct tnode *p, char *w)
+struct tnode *talloc(void);
+char *duplicate_str(char *);
+
+/* addtree: add a node with w, at or below p. Also indicate if variable names match per match_threshold */
+struct tnode *addtree(struct tnode *p, char *w, const int match_threshold)
 {
+    int cond, match_count;
+    static int is_match;
+    char *copy_a, *copy_b;
+    match_count = 0;
+
+    if(p==NULL) /* new word has arrived */
+    {
+        p = talloc(); /* make a new node */
+        p->var_name = duplicate_str(w);
+        if(is_match)
+        {
+            p->is_identical = 1;
+            is_match = 0;
+        }
+        else
+        {
+            p->is_identical = 0;
+        }
+        p->left = p->right = NULL;
+    }
+    else if((cond=strcmp(w, p->var_name))!=0)
+    {
+        copy_a = w;
+        copy_b = p->var_name;
+        while(*copy_a++ == *copy_b++)
+        {
+            match_count++;
+        }
+        if(match_count >= match_threshold)
+        {
+            is_match = 1;
+            p->is_identical = 1;
+        }
+        if(cond<0) p->left = addtree(p->left, w, match_threshold);
+        if(cond>0) p->right = addtree(p->right, w, match_threshold);
+    }
     return p;
 }
 
-void treeprint_twins(struct tnode *p)
+/* treeprint: in-order print of tree p, only printing those names where is_identical is true */
+void treeprint(struct tnode *p)
 {
-
+    if(p!=NULL)
+    {
+        treeprint(p->left);
+        if(p->is_identical)
+        {
+            printf("%s\n", p->var_name);
+        }
+        treeprint(p->right);
+    }
 }
 
-int getword(char *, int);
+/* talloc: make a tnode */
+struct tnode *talloc(void)
+{
+    return (struct tnode *) malloc(sizeof(struct tnode));
+}
+
+/* duplicate_str: make a duplicate of s */
+char *duplicate_str(char *s)
+{
+    char *p;
+
+    p = (char *) malloc(strlen(s)+1); // +1 for '\0'
+    if(p!=NULL)
+    {
+        strcpy(p, s);
+    }
+    return p;
+}
+
 int getch(void);
 void ungetch(int);
 
+/* is_variable:
+    Checks whether word is the start of a valid data type, and if so, looks for a subsequent variable name.
+    If the variable name is immediately followed by '(', then it is a function name instead.
+    Returns 1 if variable name is found, 0 otherwise, and stores variable name in word */
 int is_variable(char *word, int c)
 {
     int next_char;
@@ -206,6 +290,7 @@ void skip_comment(void);
 void skip_preprocessor(void);
 
 /* getword: get next word or character from input */
+/* Modified to treat '_' as an alphabetical character to parse variable names */
 int getword(char *word, int lim)
 {
     int c;
@@ -217,7 +302,7 @@ int getword(char *word, int lim)
     {
         *w++ = c;
     }
-    if(!isalpha(c))
+    if(!isalpha(c) && c!='_')
     {
         skip_irregular_text(c);
         *w = '\0';
@@ -226,7 +311,7 @@ int getword(char *word, int lim)
 
     for(; --lim>0; w++)
     {
-        if(!isalnum(*w = getch()))
+        if(!isalnum(*w = getch()) && *w!='_')
         {
             ungetch(*w);
             break;
