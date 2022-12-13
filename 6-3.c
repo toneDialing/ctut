@@ -38,7 +38,7 @@ int main(void)
     root = NULL;
     while(getword(word, MAXWORD)!=EOF)
     {
-        if(c=='\n')
+        if(word[0]=='\n')
         {
             line_count++;
         }
