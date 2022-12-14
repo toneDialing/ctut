@@ -108,7 +108,7 @@ void treeprint(struct tnode *p)
     if(p!=NULL)
     {
         treeprint(p->left);
-        printf("%2s: %d", p->word, p->line_number);
+        printf("\t%s: %d", p->word, p->line_number);
         if(p->next_line!=NULL) lineprint(p->next_line);
         printf("\n");
         treeprint(p->right);
@@ -156,8 +156,8 @@ int getword(char *word, int lim)
     int c;
     char *w = word;
 
-    /* ignore white space */
-    while(isspace(c = getch()));
+    /* ignore literal space characters */
+    while((c = getch())==' ');
     if(c!=EOF)
     {
         *w++ = c;
