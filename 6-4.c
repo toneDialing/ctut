@@ -16,14 +16,29 @@ struct tnode
     struct tnode *right;
 };
 
+struct wordcount_unit
+{
+    char *word;
+    int count;
+};
+
+int total_word_count;
+
 struct tnode *addtree(struct tnode *, char *);
+void fill_array(struct tnode *, struct wordcount_unit *);
 void treeprint(struct tnode *);
+void q_sort(struct wordcount_unit [], int, int);
 int getword(char *, int);
 
-/* This example is from the book, but it doesn't free() the storage it allocates with malloc() because
-    they haven't properly discussed those functions yet. */
+/* This code is partially from the book, but it doesn't free() the storage it allocates with malloc()
+    because they haven't properly discussed those functions yet. */
 
-/* General word frequency count (case-sensitive) */
+/* I'm well aware this algorithm is terrible, but it gets the job done and is built upon algorithms and
+    structures I already know. Once I know more about structures and algorithms, I'm sure I can rewrite
+    this better. At any rate it is still satisfying to know I got everything to work on the first try,
+    confirming that I understand the material thus far. */
+
+/* General word frequency count (case-sensitive); prints words in decreasing order of frequency */
 int main(void)
 {
     struct tnode *root;
@@ -37,7 +52,13 @@ int main(void)
             root = addtree(root, word);
         }
     }
-    treeprint(root);
+    struct wordcount_unit allwords[total_word_count];
+    fill_array(root, allwords);
+    q_sort(allwords, 0, total_word_count-1);
+    for(int i=0; i<total_word_count; i++)
+    {
+        printf("%4d %s\n", allwords[i].count, allwords[i].word);
+    }
     return 0;
 }
 
@@ -55,6 +76,7 @@ struct tnode *addtree(struct tnode *p, char *w)
         p->word = duplicate_str(w);
         p->count = 1;
         p->left = p->right = NULL;
+        total_word_count++;
     }
     else if((cond=strcmp(w, p->word))==0)
     {
@@ -66,6 +88,49 @@ struct tnode *addtree(struct tnode *p, char *w)
     }
     else p->right = addtree(p->right, w);
     return p;
+}
+
+void fill_array(struct tnode *p, struct wordcount_unit *q)
+{
+    static int i;
+
+    if(p!=NULL)
+    {
+        fill_array(p->left, q);
+        q[i].word = p->word;
+        q[i].count = p->count;
+        i++;
+        fill_array(p->right, q);
+    }
+}
+
+void q_sort(struct wordcount_unit v[], int left, int right)
+{
+    int i, last;
+    void swap(struct wordcount_unit [], int, int);
+
+    if(left>=right) return;
+    swap(v, left, (left+right)/2);
+    last = left;
+    for(i=left+1; i<=right; i++)
+    {
+        if(v[i].count>v[left].count)
+        {
+            swap(v, ++last, i);
+        }
+    }
+    swap(v, left, last);
+    q_sort(v, left, last-1);
+    q_sort(v, last+1, right);
+}
+
+void swap(struct wordcount_unit v[], int i, int j)
+{
+    struct wordcount_unit temp;
+
+    temp = v[i];
+    v[i] = v[j];
+    v[j] = temp;
 }
 
 /* treeprint: in-order print of tree p */
@@ -104,6 +169,7 @@ void skip_irregular_text(int);
 void skip_comment(void);
 void skip_preprocessor(void);
 
+/* NOTE: getword() doesn't account for words with apostrophes or hyphens etc. */
 /* getword: get next word or character from input */
 int getword(char *word, int lim)
 {
