@@ -19,6 +19,9 @@ struct nlist *install(char *, char *);
 void undef(char *, char *);
 char *duplicate_string(char *);
 
+/* Write a function undef() that will remove a name and definition from the table maintained
+    by lookup() and install() */
+
 int main(void)
 {
     char *name1 = "IN";
