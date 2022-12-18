@@ -46,7 +46,7 @@ int main(void)
 /* undef: remove (name, defn) from hashtab */
 void undef(char *name, char *defn)
 {
-
+    /* Use free() function as it's used in install(), but it hasn't actually been introduced yet */
 }
 
 /* install: put (name, defn) in hashtab */
