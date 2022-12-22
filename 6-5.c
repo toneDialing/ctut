@@ -48,6 +48,7 @@ void undef(char *name, char *defn)
 {
     /* Use free() function as it's used in install(), but it hasn't actually been introduced yet */
     /* Use lookup() to find what must be removed */
+    //Can I build without static variables?
 }
 
 /* install: put (name, defn) in hashtab */
