@@ -45,13 +45,13 @@ int main(void)
     return 0;
 }
 
-/* undef: remove (name, defn) from hashtab */
+/* undef: remove (name, defn) from hashtab
+    Removes entire block containing (name, defn) from linked list, freeing its memory.
+    Only uses name to search for name and defn, since there exists only one defn per name.
+    Does nothing if name isn't found. User isn't alerted of redundancy since the goal is to
+    remove the name anyway. */
 void undef(char *name)
 {
-    /* Use free() function as it's used in install(), but it hasn't actually been introduced yet */
-    /* Use lookup() to find what must be removed */
-    /* Essentially copy install() but execute in the opposite direction */
-
     struct nlist *np;
     struct nlist *previous_struct;
     unsigned hashval = hash(name);
