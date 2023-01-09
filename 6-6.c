@@ -35,9 +35,17 @@ void ungetch(int);
 
 int main(void)
 {
+    int c;
     char word[MAX_WORD_LENGTH];
     char name[MAX_WORD_LENGTH];
     char defn[MAX_WORD_LENGTH];
+
+    while(isspace(c=getch()));
+    while(c=='#')
+    {
+        c = getword(word, MAX_WORD_LENGTH);
+
+    }
 
     while(getword(word, MAX_WORD_LENGTH)!=EOF)
     {
@@ -59,6 +67,27 @@ int main(void)
     }
 
     return 0;
+}
+
+void preprocess(void)
+{
+    int c;
+    char word[MAX_WORD_LENGTH];
+    char name[MAX_WORD_LENGTH];
+    char defn[MAX_WORD_LENGTH];
+
+    while(isspace((c=getch())));
+    if(c!='#') return;
+
+    if(getword(word, MAX_WORD_LENGTH)==EOF) return;
+
+    if(strcmp(word, "define")==0)
+    {
+        if(getword(name, MAX_WORD_LENGTH)!=EOF && getword(defn, MAX_WORD_LENGTH)!=EOF)
+        {
+            install(name, defn);
+        }
+    }
 }
 
 /* install: put (name, defn) in hashtab */
