@@ -16,7 +16,7 @@ static struct nlist *hashtab[HASHSIZE];
 unsigned hash(char *);
 struct nlist *lookup(char *);
 struct nlist *install(char *, char *);
-void undef(char *, char *);
+void undef(char *);
 char *duplicate_string(char *);
 
 /* Write a function undef() that will remove a name and definition from the table maintained
@@ -32,6 +32,8 @@ int main(void)
     install(name1, defn1);
     install(name2, defn2);
 
+    undef(name1);
+
     for(int i=0; i<HASHSIZE; i++)
     {
         if(hashtab[i]!=NULL)
@@ -44,11 +46,40 @@ int main(void)
 }
 
 /* undef: remove (name, defn) from hashtab */
-void undef(char *name, char *defn)
+void undef(char *name)
 {
     /* Use free() function as it's used in install(), but it hasn't actually been introduced yet */
     /* Use lookup() to find what must be removed */
     /* Essentially copy install() but execute in the opposite direction */
+
+    struct nlist *np;
+    struct nlist *previous_struct;
+    unsigned hashval = hash(name);
+    int linked_list_position = 0;
+
+    for(np = previous_struct = hashtab[hashval]; np != NULL; np = np->next)
+    {
+        if(strcmp(name, np->name)==0)
+        {
+            break;
+        }
+        linked_list_position++;
+        previous_struct = np;
+    }
+    if(np==NULL) return;
+
+    if(linked_list_position)
+    {
+        previous_struct->next = np->next;
+    }
+    else
+    {
+        hashtab[hashval] = np->next;
+    }
+
+    free((void *) np->name);
+    free((void *) np->defn);
+    free((void *) np);
 }
 
 /* install: put (name, defn) in hashtab */
