@@ -57,6 +57,8 @@ int main(void)
         }
     }
 
+    /* this installation loop needs to end before I can begin replacing text */
+
     /* note this only prints first entry in linked list for each hash value */
     for(int i=0; i<HASHSIZE; i++)
     {
