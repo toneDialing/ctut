@@ -29,7 +29,7 @@ void ungetch(int);
 
 /* All the necessary hashmap functions are already written as install() and lookup() etc.,
     so I should only need to use getch()/ungetch() to search for '#'s followed by "define" */
-/* Use if for '#' then loop along to match chars to "define" */
+/* Use if to find '#' then loop along to match chars to "define" */
 
 /* Thus far this code puts names and definitions in table, but doesn't replace them in source code */
 
@@ -50,6 +50,7 @@ int main(void)
     while(getword(word, MAX_WORD_LENGTH)!=EOF)
     {
         if(strcmp(word, "#define")!=0) continue;
+        else break;
 
         if(getword(name, MAX_WORD_LENGTH)!=EOF && getword(defn, MAX_WORD_LENGTH)!=EOF)
         {
