@@ -23,6 +23,7 @@ char *duplicate_string(char *);
 int getword(char *, int);
 int getch(void);
 void ungetch(int);
+void preprocess(void);
 
 /* Implement a simple version of the #define processor (i.e., no arguments) suitable for use with C programs,
     based on the routines of this section. You may also find getch() and ungetch() helpful. */
@@ -39,33 +40,55 @@ int main(void)
     char word[MAX_WORD_LENGTH];
     char name[MAX_WORD_LENGTH];
     char defn[MAX_WORD_LENGTH];
+    int is_preprocessing = 1;
 
-    while(isspace(c=getch()));
-    while(c=='#')
+    /* Preprocessing occurs until a new line is encountered that doesn't start with '#' */
+    while(is_preprocessing)
     {
-        c = getword(word, MAX_WORD_LENGTH);
-
-    }
-
-    while(getword(word, MAX_WORD_LENGTH)!=EOF)
-    {
-        if(strcmp(word, "#define")!=0) continue;
-        else break;
-
-        if(getword(name, MAX_WORD_LENGTH)!=EOF && getword(defn, MAX_WORD_LENGTH)!=EOF)
+        while(isspace(c=getch()));
+        if(c!='#')
         {
+            is_preprocessing = 0;
+            ungetch(c);
+            break;
+        }
+        ungetch(c);
+
+        if((c=getword(word, MAX_WORD_LENGTH))==EOF) break;
+        else if(c=='\n') continue;
+
+        if(strcmp(word, "#define")==0)
+        {
+            if((c=getword(name, MAX_WORD_LENGTH))==EOF) break;
+            else if(c=='\n') continue;
+
+            if((c=getword(defn, MAX_WORD_LENGTH))==EOF) break;
+            else if(c=='\n') continue;
+
             install(name, defn);
         }
+        /* Note that any text that comes after a name and definition is ignored.
+            Likewise entire lines that begin with '#' but not "#define" are ignored.
+            Thus we are assuming valid input. */
+
+        while((c=getch())!='\n');
     }
 
-    /* this installation loop needs to end before I can begin replacing text */
+    /* Now we just have to read and replace */
 
-    /* note this only prints first entry in linked list for each hash value */
-    for(int i=0; i<HASHSIZE; i++)
+    while(isspace(c=getch()));
+    if(c!='#')
     {
-        if(hashtab[i]!=NULL)
+        is_preprocessing = 0;
+    }
+    while(is_preprocessing)
+    {
+        if(getword(word, MAX_WORD_LENGTH)!=EOF)
         {
-            printf("%s: %s\n", hashtab[i]->name, hashtab[i]->defn);
+            if(strcmp(word, "define")==0)
+            {
+
+            }
         }
     }
 
@@ -74,23 +97,7 @@ int main(void)
 
 void preprocess(void)
 {
-    int c;
-    char word[MAX_WORD_LENGTH];
-    char name[MAX_WORD_LENGTH];
-    char defn[MAX_WORD_LENGTH];
 
-    while(isspace((c=getch())));
-    if(c!='#') return;
-
-    if(getword(word, MAX_WORD_LENGTH)==EOF) return;
-
-    if(strcmp(word, "define")==0)
-    {
-        if(getword(name, MAX_WORD_LENGTH)!=EOF && getword(defn, MAX_WORD_LENGTH)!=EOF)
-        {
-            install(name, defn);
-        }
-    }
 }
 
 /* install: put (name, defn) in hashtab */
@@ -163,16 +170,16 @@ char *duplicate_string(char *s)
     return p;
 }
 
-/* getword: get next word or character from input
+/* getword: get next word or character from input and store it in word, returning first char of word
     Here, a word is defined as any collection of characters separated by spaces */
 int getword(char *word, int lim)
 {
     int c;
     char *w = word;
 
-    /* ignore white space and other irregular text */
-    while(isspace(c = getch()));
-    if(c!=EOF)
+    /* ignore spaces and tabs but not newlines */
+    while((c = getch())==' ' || c=='\t');
+    if(c!=EOF && c!='\n')
     {
         *w++ = c;
     }
