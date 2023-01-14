@@ -76,22 +76,6 @@ int main(void)
 
     /* Now we just have to read and replace */
 
-    while(isspace(c=getch()));
-    if(c!='#')
-    {
-        is_preprocessing = 0;
-    }
-    while(is_preprocessing)
-    {
-        if(getword(word, MAX_WORD_LENGTH)!=EOF)
-        {
-            if(strcmp(word, "define")==0)
-            {
-
-            }
-        }
-    }
-
     return 0;
 }
 
