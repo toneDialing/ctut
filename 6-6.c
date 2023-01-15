@@ -79,7 +79,9 @@ int main(void)
     /* Now we just have to read and replace */
 
     struct nlist *replacement_text;
-    strcat(output, "\n");
+    strcat(output, "OUTPUT:\n\n");
+
+    /* PROBLEM: #define doesn't recognize words next to semicolons/parentheses etc. */
 
     while((c=getword(word, MAX_WORD_LENGTH))!=EOF)
     {
@@ -99,6 +101,9 @@ int main(void)
         }
 
         /* getword() on its own won't work because it won't print spaces */
+        /* thus I've manually added spaces, but tabs are still ignored */
+        /* I could easily fix this by writing another getword() function to return spaces and tabs,
+            rather than just skip over them */
     }
 
     printf("%s\n", output);
