@@ -4,6 +4,7 @@
 #include <ctype.h>
 
 #define MAX_WORD_LENGTH 100
+#define MAX_OUTPUT 100000
 
 struct nlist
 {
@@ -15,6 +16,7 @@ struct nlist
 #define HASHSIZE 101
 
 static struct nlist *hashtab[HASHSIZE];
+char output[MAX_OUTPUT];
 
 unsigned hash(char *);
 struct nlist *lookup(char *);
@@ -75,6 +77,31 @@ int main(void)
     }
 
     /* Now we just have to read and replace */
+
+    struct nlist *replacement_text;
+    strcat(output, "\n");
+
+    while((c=getword(word, MAX_WORD_LENGTH))!=EOF)
+    {
+        if(c=='\n')
+        {
+            strcat(output, "\n");
+        }
+        else if((replacement_text=lookup(word))!=NULL)
+        {
+            strcat(output, replacement_text->defn);
+            strcat(output, " ");
+        }
+        else
+        {
+            strcat(output, word);
+            strcat(output, " ");
+        }
+
+        /* getword() on its own won't work because it won't print spaces */
+    }
+
+    printf("%s\n", output);
 
     return 0;
 }
