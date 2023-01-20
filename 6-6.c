@@ -82,6 +82,7 @@ int main(void)
     strcat(output, "OUTPUT:\n\n");
 
     /* PROBLEM: #define doesn't recognize words next to semicolons/parentheses etc. */
+    /* Fixing this requires restructuring my functions so I might not bother for the sake of time */
 
     while((c=getword(word, MAX_WORD_LENGTH))!=EOF)
     {
