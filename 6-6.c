@@ -25,16 +25,21 @@ char *duplicate_string(char *);
 int getword(char *, int);
 int getch(void);
 void ungetch(int);
-void preprocess(void);
 
 /* Implement a simple version of the #define processor (i.e., no arguments) suitable for use with C programs,
     based on the routines of this section. You may also find getch() and ungetch() helpful. */
 
-/* All the necessary hashmap functions are already written as install() and lookup() etc.,
-    so I should only need to use getch()/ungetch() to search for '#'s followed by "define" */
-/* Use if to find '#' then loop along to match chars to "define" */
-
-/* Thus far this code puts names and definitions in table, but doesn't replace them in source code */
+/* PROBLEMS: This code has several issues that prevent it from working like a true #define processor, but for
+    the sake of time I will leave this large project alone and continue onward to learn other things. Overall
+    this code is pretty rusty, and I feel like even the parts that work are shoddily built. At any rate,
+    here are the issues I have identified thus far:
+        #define names are only recognized when surrounded by spaces. Thus, if 'IN' is to be replaced in source
+            code, it cannot be immediately adjacent to semicolons, parentheses, or anything else.
+        #define statements cannot be stretched by adding '\' at the end of a line
+        #define statements cannot reference previous definitions
+        Assumes valid input (not as big a deal)
+        getword() should be rewritten to not skip tabs etc., so that input may be accurately reprinted
+*/
 
 int main(void)
 {
@@ -81,9 +86,6 @@ int main(void)
     struct nlist *replacement_text;
     strcat(output, "OUTPUT:\n\n");
 
-    /* PROBLEM: #define doesn't recognize words next to semicolons/parentheses etc. */
-    /* Fixing this requires restructuring my functions so I might not bother for the sake of time */
-
     while((c=getword(word, MAX_WORD_LENGTH))!=EOF)
     {
         if(c=='\n')
@@ -110,11 +112,6 @@ int main(void)
     printf("%s\n", output);
 
     return 0;
-}
-
-void preprocess(void)
-{
-
 }
 
 /* install: put (name, defn) in hashtab */
