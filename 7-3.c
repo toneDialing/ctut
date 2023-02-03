@@ -34,7 +34,7 @@ void minprintf(char *fmt, ...)
     va_start(ap, fmt); /* make ap point to 1st unnamed argument */
     for(p = fmt; *p; p++)
     {
-        field_width = 0;
+        left_align = width_specified = 0;
         if(*p!='%')
         {
             putchar(*p);
