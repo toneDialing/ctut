@@ -18,7 +18,7 @@ int main(void)
     double d;
     char s[MAX_WORD_LENGTH];
 
-    if(!minscanf("%d %f %s", &n, &d, s))
+    if(!minscanf("%d / %f / %s", &n, &d, s))
     {
         printf("Error: minscanf() failed to assign input items\n");
     }
