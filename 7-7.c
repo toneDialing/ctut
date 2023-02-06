@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 
     if(argc==1)
     {
-        printf("Usage: 7-7.c [pattern] [opt. file names]\n");
+        printf("Usage: ./7-7 [pattern] [opt. file names]\n");
         return 0;
     }
 
