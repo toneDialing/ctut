@@ -10,6 +10,9 @@
 /* File name is printed when matching line is found. Used get_line() for searching standard input
     in order to keep it similar to the example from Chapter 5, even though it's not necessary. */
 
+/* Searches files (or standard input if no files are specified) for pattern given in command line,
+    printing lines where the pattern is found. */
+
 int get_line(char *, int);
 
 int main(int argc, char *argv[])
@@ -35,7 +38,7 @@ int main(int argc, char *argv[])
                 found++;
             }
         }
-        printf("Total matches found: %d\n", found);
+        printf("Total lines found: %d\n", found);
         return 0;
     }
 
@@ -56,7 +59,7 @@ int main(int argc, char *argv[])
         }
         fclose(fp);
     }
-    printf("Total matches found: %d\n", found);
+    printf("Total lines found: %d\n", found);
     return 0;
 }
 
